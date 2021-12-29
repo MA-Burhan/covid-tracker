@@ -36,11 +36,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="locationStats : ${stats}">
-                    <td th:text="${locationStats.country}"></td>
-                    <td th:text="${locationStats.state}"></td>
-                    <td th:text="${locationStats.totalNumOfCasesLatest}"></td>
-                    <td th:text="${locationStats.numOfNewCases}"></td>
+                <tr th:each="locationConfirmedCases : ${stats}">
+                    <td th:text="${locationConfirmedCases.country}"></td>
+                    <td th:text="${locationConfirmedCases.state}"></td>
+                    <td th:text="${locationConfirmedCases.total}"></td>
+                    <td th:text="${locationConfirmedCases.increase}"></td>
                 </tr>
                 </tbody>
             </table>

@@ -1,6 +1,6 @@
 package maburhan.covidtracker.repositories;
 
-import maburhan.covidtracker.model.LocationStats;
+import maburhan.covidtracker.model.LocationConfirmedCases;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -15,19 +15,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class CovidDataRepository {
+public class LocationConfirmedCasesRepository {
 
     private final String url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" +
             "csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
 
-    private List<LocationStats> locationStatsList = new ArrayList<>();
+    private List<LocationConfirmedCases> locationConfirmedCasesList = new ArrayList<>();
     private LocalDate lastUpdateDate;
 
     @PostConstruct
@@ -36,9 +34,10 @@ public class CovidDataRepository {
 
         HttpResponse<String> response = getData();
 
-        List<LocationStats> locationStats = parseCsv(response.body());
+        List<LocationConfirmedCases> locationConfirmedCases = parseCsv(response.body());
 
-        this.locationStatsList = locationStats;
+        //TODO make this thread safe
+        this.locationConfirmedCasesList = locationConfirmedCases;
     }
 
     private HttpResponse<String> getData(){
@@ -58,9 +57,9 @@ public class CovidDataRepository {
         return response;
     }
 
-    private List<LocationStats> parseCsv(String csv){
+    private List<LocationConfirmedCases> parseCsv(String csv){
         StringReader stringReader = new StringReader(csv);
-        List<LocationStats> newStats = new ArrayList<>();
+        List<LocationConfirmedCases> newStats = new ArrayList<>();
 
         CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).build();
         CSVParser records = null;
@@ -72,14 +71,15 @@ public class CovidDataRepository {
 
 
         for (CSVRecord record : records) {
-            LocationStats locationStats = LocationStats.builder()
+            LocationConfirmedCases locationConfirmedCases = LocationConfirmedCases.builder()
                     .state(record.get("Province/State"))
                     .country(record.get("Country/Region"))
-                    .totalNumOfCasesLatest(Integer.parseInt(record.get(record.size() - 1)))
-                    .totalNumOfCasesPrevDay(Integer.parseInt(record.get(record.size() - 2)))
+                    .total(Integer.parseInt(record.get(record.size() - 1)))
+                    .increase(Integer.parseInt(record.get(record.size() - 1))
+                            - Integer.parseInt(record.get(record.size() - 2)))
                     .build();
 
-            newStats.add(locationStats);
+            newStats.add(locationConfirmedCases);
         }
 
         //Set last update date
@@ -92,8 +92,8 @@ public class CovidDataRepository {
         return newStats;
     }
 
-    public List<LocationStats> getLocationStatsList() {
-        return locationStatsList;
+    public List<LocationConfirmedCases> getLocationConfimedCasesList() {
+        return locationConfirmedCasesList;
     }
 
     public LocalDate getLastUpdateDate() {
