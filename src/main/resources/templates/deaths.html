@@ -15,32 +15,40 @@
         <div class="col-md-10 offset-md-1">
 
             <h1 th:text="'COVID19 TRACKER'">COVID19 TRACKER</h1>
-            <p>Total number of confirmed COVID19 cases across the globe</p>
+            <br>
+            <h4>Total number of reported deaths due to COVID19 cases across the globe</h4>
 
-            <div class="my-4 p-5 bg-info">
+            <div class="mt-4 p-5 bg-info">
                 <h1 th:text="${totalCases}"></h1>
-                <span>Total confirmed cases as of </span>
+                <span>Total reported deaths as of </span>
                 <span th:text="${lastUpdateDate}"></span>
                 <hr class="my-4">
                 <h2 th:text="${totalNewCases}"></h2>
-                <p>New cases reported since previous day</p>
+                <p>Total new reported deaths since previous day</p>
             </div>
+
+            <nav class="my-2 navbar navbar-info bg-light">
+                <form class="form-inline">
+                    <a href="/confirmed"><button class="btn btn-outline-dark" type="button">CONFIRMED CASES</button></a>
+                    <a href="/deaths"><button class="btn btn-outline-dark" type="button">DEATHS</button></a>
+                </form>
+            </nav>
 
             <table id="covidStats" class="table table-hover mt-4">
                 <thead>
                 <tr>
                     <th>COUNTRY</th>
                     <th>STATE</th>
-                    <th>TOTAL CASES REPORTED</th>
+                    <th>TOTAL DEATHS REPORTED</th>
                     <th>CHANGES SINCE LAST DAY</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="locationConfirmedCases : ${stats}">
-                    <td th:text="${locationConfirmedCases.country}"></td>
-                    <td th:text="${locationConfirmedCases.state}"></td>
-                    <td th:text="${locationConfirmedCases.total}"></td>
-                    <td th:text="${locationConfirmedCases.increase}"></td>
+                <tr th:each="locationStat : ${stats}">
+                    <td th:text="${locationStat.country}"></td>
+                    <td th:text="${locationStat.state}"></td>
+                    <td th:text="${locationStat.total}"></td>
+                    <td th:text="${locationStat.increase}"></td>
                 </tr>
                 </tbody>
             </table>
