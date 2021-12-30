@@ -56,5 +56,5 @@ public class CovidDataService {
     public LocalDate getLastUpdateDeaths(){
         return covidDataRepository.getCovidDataList().get(0).getDeathsLastUpdate();
     }
-
+    
 }
