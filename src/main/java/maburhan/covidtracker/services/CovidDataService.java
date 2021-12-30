@@ -1,6 +1,6 @@
 package maburhan.covidtracker.services;
 
-import maburhan.covidtracker.model.LocationStats;
+import maburhan.covidtracker.model.CovidData;
 import maburhan.covidtracker.repositories.CovidDataRepository;
 import org.springframework.stereotype.Service;
 
@@ -10,31 +10,51 @@ import java.util.List;
 @Service
 public class CovidDataService {
 
-    CovidDataRepository repository;
+    CovidDataRepository covidDataRepository;
 
     public CovidDataService(CovidDataRepository repository) {
-        this.repository = repository;
+        this.covidDataRepository = repository;
     }
 
-    public List<LocationStats> getStats(String typeOfStats) {
-        return repository.getAllStats().get(typeOfStats);
+    public List<CovidData> getCovidData(){
+        return covidDataRepository.getCovidDataList();
     }
 
-    public int getTotalCases(String typeOfStats) {
-        return repository.getAllStats().get(typeOfStats)
+    public int getTotalConfirmedCasesGlobal() {
+        return covidDataRepository.getCovidDataList()
                 .stream()
-                .mapToInt(stat -> stat.getTotal())
+                .mapToInt(covidData -> covidData.getTotalConfirmedCases())
                 .sum();
     }
 
-    public int getTotalNewCases(String typeOfStats) {
-        return repository.getAllStats().get(typeOfStats)
+    public int getTotalDeathsGlobal() {
+        return covidDataRepository.getCovidDataList()
                 .stream()
-                .mapToInt(stat -> stat.getIncrease())
+                .mapToInt(covidData -> covidData.getTotalDeaths())
                 .sum();
     }
 
-    public LocalDate getLastUpdateDate(String typeOfStats){
-        return repository.getLatestUpdateDates().get(typeOfStats);
+
+    public int getNewConfirmedCasesGlobal() {
+        return covidDataRepository.getCovidDataList()
+                .stream()
+                .mapToInt(covidData -> covidData.getNewConfirmedCases())
+                .sum();
     }
+
+    public int getNewDeathsGlobal() {
+        return covidDataRepository.getCovidDataList()
+                .stream()
+                .mapToInt(covidData -> covidData.getNewDeaths())
+                .sum();
+    }
+
+    public LocalDate getLastUpdateConfirmedCases(){
+        return covidDataRepository.getCovidDataList().get(0).getConfirmedCasesLastUpdate();
+    }
+
+    public LocalDate getLastUpdateDeaths(){
+        return covidDataRepository.getCovidDataList().get(0).getDeathsLastUpdate();
+    }
+
 }

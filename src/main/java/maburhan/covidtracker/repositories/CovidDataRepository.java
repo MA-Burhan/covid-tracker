@@ -1,55 +1,116 @@
 package maburhan.covidtracker.repositories;
 
-import maburhan.covidtracker.model.LocationStats;
+import maburhan.covidtracker.model.CovidData;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Repository
 public class CovidDataRepository {
 
-    private Map<String, List<LocationStats>> allStats = new HashMap<>();
-    private Map<String, LocalDate> latestUpdateDates = new HashMap<>();
-    private Map<String, String> urls = new HashMap<>();
-    private LocationStatsRepository repository;
+    private List<CovidData> covidDataList = new ArrayList<>();
+    private final String urlConfirmed = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" +
+            "csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
+    private final String urlDeaths = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" +
+            "csse_covid_19_time_series/time_series_covid19_deaths_global.csv";
 
-    public CovidDataRepository(LocationStatsRepository repository) {
-        this.repository = repository;
-
-        urls.put("confirmed", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" +
-                "csse_covid_19_time_series/time_series_covid19_confirmed_global.csv");
-        urls.put("recovered", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" +
-                "csse_covid_19_time_series/time_series_covid19_recovered_global.csv");
-        urls.put("deaths", "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" +
-                "csse_covid_19_time_series/time_series_covid19_deaths_global.csv");
-    }
 
     @PostConstruct
     @Scheduled(cron = "0 0 1 * * *")
     public void processCovidData(){
+        HttpResponse<String> confirmedResponse = getData(urlConfirmed);
+        HttpResponse<String> deathsResponse = getData(urlDeaths);
 
-        processCovidData("confirmed");
-        processCovidData("deaths");
+        parseCsv(confirmedResponse.body(), deathsResponse.body());
     }
 
-    public void processCovidData(String typeOfData){
-        Object[] data = repository.processStats(urls.get(typeOfData));
-        allStats.put(typeOfData, (List<LocationStats>) data[0]);
-        latestUpdateDates.put(typeOfData, (LocalDate) data[1]);
+
+    private HttpResponse<String> getData(String url){
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .build();
+
+        HttpResponse<String> response = null;
+        try{
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return response;
     }
 
-    public Map<String, List<LocationStats>> getAllStats() {
-        return allStats;
+    private void parseCsv(String confirmedCsv, String deathsCsv){
+        StringReader confirmedStringReader = new StringReader(confirmedCsv);
+        StringReader deathsStringReader = new StringReader(deathsCsv);
+
+        CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).build();
+
+        CSVParser confirmedRecords = null;
+        CSVParser deathsRecords = null;
+        try {
+            confirmedRecords = csvFormat.parse(confirmedStringReader);
+            deathsRecords = csvFormat.parse(deathsStringReader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, CovidData> covidDataMap = new LinkedHashMap<>();
+
+        LocalDate confirmedCasesLastUpdate = getLastUpdateDate(confirmedRecords);
+
+        for (CSVRecord confirmedRecord : confirmedRecords) {
+            CovidData covidData = CovidData.builder()
+                    .state(confirmedRecord.get("Province/State"))
+                    .country(confirmedRecord.get("Country/Region"))
+                    .totalConfirmedCases(Integer.parseInt(confirmedRecord.get(confirmedRecord.size() - 1)))
+                    .newConfirmedCases(Integer.parseInt(confirmedRecord.get(confirmedRecord.size() - 1))
+                            - Integer.parseInt(confirmedRecord.get(confirmedRecord.size() - 2)))
+                    .confirmedCasesLastUpdate(confirmedCasesLastUpdate)
+                    .build();
+            covidDataMap.put(covidData.getCountry(), covidData);
+        }
+
+
+        LocalDate deathsLastUpdate = getLastUpdateDate(deathsRecords);
+
+        for (CSVRecord deathsRecord : deathsRecords) {
+            CovidData covidData = covidDataMap.get(deathsRecord.get("Country/Region"));
+            covidData.setTotalDeaths(Integer.parseInt(deathsRecord.get(deathsRecord.size() - 1)));
+            covidData.setNewDeaths(Integer.parseInt(deathsRecord.get(deathsRecord.size() - 1))
+                    - Integer.parseInt(deathsRecord.get(deathsRecord.size() - 2)));
+            covidData.setDeathsLastUpdate(deathsLastUpdate);
+        }
+
+
+        this.covidDataList = new ArrayList<>(covidDataMap.values());
+
     }
 
-    public Map<String, LocalDate> getLatestUpdateDates() {
-        return latestUpdateDates;
+    private LocalDate getLastUpdateDate(CSVParser records){
+        List<String> headerNames = records.getHeaderNames();
+        String lastColumnHeader = headerNames.get(headerNames.size() - 1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
+        return LocalDate.parse(lastColumnHeader, formatter);
     }
+
+    public List<CovidData> getCovidDataList() {
+        return covidDataList;
+    }
+
 }

@@ -13,7 +13,7 @@
 <div class="container-fluid" style="margin: 40px auto">
     <div class="row">
         <div class="col-md-10 offset-md-1">
-            <h1 th:text="'COVID19 TRACKER'">COVID19 TRACKER</h1>
+            <h1>COVID19 TRACKER</h1>
             <br>
             <h4>Total number of confirmed COVID19 cases across the globe</h4>
 
@@ -28,8 +28,8 @@
 
             <nav class="my-2 navbar navbar-info bg-light">
                 <form class="form-inline">
-                    <a href="/confirmed"><button class="btn btn-outline-dark" type="button">CONFIRMED CASES</button></a>
-                    <a href="/deaths"><button class="btn btn-outline-dark" type="button">DEATHS</button></a>
+                    <a href="/confirmed"><button class="btn btn-outline-info active" type="button">CONFIRMED CASES</button></a>
+                    <a href="/deaths"><button class="btn btn-outline-info" type="button">DEATHS</button></a>
                 </form>
             </nav>
 
@@ -39,15 +39,15 @@
                     <th>COUNTRY</th>
                     <th>STATE</th>
                     <th>TOTAL CONFIRMED CASES</th>
-                    <th>CHANGES SINCE PREV DAY</th>
+                    <th>NEW CASES SINCE PREV DAY</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="locationConfirmedCases : ${stats}">
-                    <td th:text="${locationConfirmedCases.country}"></td>
-                    <td th:text="${locationConfirmedCases.state}"></td>
-                    <td th:text="${locationConfirmedCases.total}"></td>
-                    <td th:text="${locationConfirmedCases.increase}"></td>
+                <tr th:each="covidData : ${stats}">
+                    <td th:text="${covidData.country}"></td>
+                    <td th:text="${covidData.state}"></td>
+                    <td th:text="${covidData.totalConfirmedCases}"></td>
+                    <td th:text="${covidData.newConfirmedCases}"></td>
                 </tr>
                 </tbody>
             </table>

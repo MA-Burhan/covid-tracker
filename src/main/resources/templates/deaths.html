@@ -14,7 +14,7 @@
     <div class="row">
         <div class="col-md-10 offset-md-1">
 
-            <h1 th:text="'COVID19 TRACKER'">COVID19 TRACKER</h1>
+            <h1>COVID19 TRACKER</h1>
             <br>
             <h4>Total number of reported deaths due to COVID19 cases across the globe</h4>
 
@@ -29,8 +29,8 @@
 
             <nav class="my-2 navbar navbar-info bg-light">
                 <form class="form-inline">
-                    <a href="/confirmed"><button class="btn btn-outline-dark" type="button">CONFIRMED CASES</button></a>
-                    <a href="/deaths"><button class="btn btn-outline-dark" type="button">DEATHS</button></a>
+                    <a href="/confirmed"><button class="btn btn-outline-info" type="button">CONFIRMED CASES</button></a>
+                    <a href="/deaths"><button class="btn btn-outline-info active" type="button">DEATHS</button></a>
                 </form>
             </nav>
 
@@ -39,16 +39,16 @@
                 <tr>
                     <th>COUNTRY</th>
                     <th>STATE</th>
-                    <th>TOTAL DEATHS REPORTED</th>
-                    <th>CHANGES SINCE LAST DAY</th>
+                    <th>TOTAL DEATHS</th>
+                    <th>NEW DEATHS SINCE PREV DAY</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="locationStat : ${stats}">
-                    <td th:text="${locationStat.country}"></td>
-                    <td th:text="${locationStat.state}"></td>
-                    <td th:text="${locationStat.total}"></td>
-                    <td th:text="${locationStat.increase}"></td>
+                <tr th:each="covidData : ${stats}">
+                    <td th:text="${covidData.country}"></td>
+                    <td th:text="${covidData.state}"></td>
+                    <td th:text="${covidData.totalDeaths}"></td>
+                    <td th:text="${covidData.newDeaths}"></td>
                 </tr>
                 </tbody>
             </table>
