@@ -1,60 +1,22 @@
 package maburhan.covidtracker.services;
 
 import maburhan.covidtracker.model.CovidData;
-import maburhan.covidtracker.repositories.CovidDataRepository;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Service
-public class CovidDataService {
+public interface CovidDataService {
+    List<CovidData> getCovidData();
 
-    CovidDataRepository covidDataRepository;
+    int getTotalConfirmedCasesGlobal();
 
-    public CovidDataService(CovidDataRepository repository) {
-        this.covidDataRepository = repository;
-    }
+    int getTotalDeathsGlobal();
 
-    public List<CovidData> getCovidData(){
-        return covidDataRepository.getCovidDataList();
-    }
+    int getNewConfirmedCasesGlobal();
 
-    public int getTotalConfirmedCasesGlobal() {
-        return covidDataRepository.getCovidDataList()
-                .stream()
-                .mapToInt(covidData -> covidData.getTotalConfirmedCases())
-                .sum();
-    }
+    int getNewDeathsGlobal();
 
-    public int getTotalDeathsGlobal() {
-        return covidDataRepository.getCovidDataList()
-                .stream()
-                .mapToInt(covidData -> covidData.getTotalDeaths())
-                .sum();
-    }
+    LocalDate getLastUpdateConfirmedCases();
 
-
-    public int getNewConfirmedCasesGlobal() {
-        return covidDataRepository.getCovidDataList()
-                .stream()
-                .mapToInt(covidData -> covidData.getNewConfirmedCases())
-                .sum();
-    }
-
-    public int getNewDeathsGlobal() {
-        return covidDataRepository.getCovidDataList()
-                .stream()
-                .mapToInt(covidData -> covidData.getNewDeaths())
-                .sum();
-    }
-
-    public LocalDate getLastUpdateConfirmedCases(){
-        return covidDataRepository.getCovidDataList().get(0).getConfirmedCasesLastUpdate();
-    }
-
-    public LocalDate getLastUpdateDeaths(){
-        return covidDataRepository.getCovidDataList().get(0).getDeathsLastUpdate();
-    }
-    
+    LocalDate getLastUpdateDeaths();
 }
